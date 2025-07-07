@@ -384,6 +384,9 @@ const charityFacts = [
 
 // This function shows a fact and a 'Learn More' button when the player wins
 function showFactModal() {
+    // Show confetti!
+    showConfetti();
+
     // Pick a random fact
     const fact = charityFacts[Math.floor(Math.random() * charityFacts.length)];
 
@@ -484,6 +487,54 @@ function showFactModal() {
 
     // Add the modal to the page
     document.body.appendChild(modalBg);
+}
+
+// This function creates a simple confetti effect using DOM elements
+function showConfetti() {
+    // Create a container for confetti
+    const confettiContainer = document.createElement('div');
+    confettiContainer.style.position = 'fixed';
+    confettiContainer.style.left = '0';
+    confettiContainer.style.top = '0';
+    confettiContainer.style.width = '100vw';
+    confettiContainer.style.height = '100vh';
+    confettiContainer.style.pointerEvents = 'none';
+    confettiContainer.style.zIndex = '2000';
+
+    // Add 40 confetti pieces
+    for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement('div');
+        // Random size and color from brand palette
+        const size = Math.random() * 12 + 8;
+        const colors = ['#FFC907', '#2E9DF7', '#8BD1CB', '#4FCB53', '#FF902A', '#F5402C', '#159A48', '#F16061'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.position = 'absolute';
+        confetti.style.width = `${size}px`;
+        confetti.style.height = `${size * 0.4}px`;
+        confetti.style.background = color;
+        confetti.style.borderRadius = '3px';
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.top = `-20px`;
+        confetti.style.opacity = '0.85';
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.style.transition = 'top 2.2s linear, left 2.2s linear, opacity 2.2s';
+
+        // Animate confetti falling
+        setTimeout(() => {
+            confetti.style.top = `${80 + Math.random() * 15}vh`;
+            confetti.style.left = `${Math.random() * 100}vw`;
+            confetti.style.opacity = '0';
+        }, 10);
+
+        confettiContainer.appendChild(confetti);
+    }
+
+    document.body.appendChild(confettiContainer);
+
+    // Remove confetti after animation
+    setTimeout(() => {
+        document.body.removeChild(confettiContainer);
+    }, 2300);
 }
 
 // Initial render
