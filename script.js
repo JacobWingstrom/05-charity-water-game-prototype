@@ -159,14 +159,17 @@ startScreen.appendChild(difficultyDiv);
 document.getElementById('easyBtn').addEventListener('click', () => {
     difficulty = 'easy';
     highlightDifficulty();
+    playSound(clickSound); // Play click sound
 });
 document.getElementById('mediumBtn').addEventListener('click', () => {
     difficulty = 'medium';
     highlightDifficulty();
+    playSound(clickSound); // Play click sound
 });
 document.getElementById('hardBtn').addEventListener('click', () => {
     difficulty = 'hard';
     highlightDifficulty();
+    playSound(clickSound); // Play click sound
 });
 
 // Highlight the selected difficulty button
@@ -187,6 +190,7 @@ startBtn.addEventListener('click', () => {
     renderBoard();
     score = 0;
     scoreSpan.textContent = score;
+    playSound(clickSound); // Play click sound
 });
 
 // Change the button text from "Pause" to "Exit"
@@ -197,6 +201,7 @@ exitBtn.addEventListener('click', () => {
     gameContainer.style.display = 'none';
     startScreen.style.display = 'flex';
     isPlaying = false;
+    playSound(clickSound); // Play click sound
 });
 
 // Helper: Render the board
@@ -251,6 +256,21 @@ function getPipeSymbol(type) {
     }
 }
 
+// --- Sound Effects ---
+// Get audio elements for sound effects
+const clickSound = document.getElementById('clickSound');
+const winSound = document.getElementById('winSound');
+const collectSound = document.getElementById('collectSound');
+const missSound = document.getElementById('missSound');
+
+// Helper function to play a sound safely
+function playSound(sound) {
+    if (sound) {
+        sound.currentTime = 0; // rewind to start
+        sound.play();
+    }
+}
+
 // Rotate the pipe in a cell
 function rotatePipe(row, col) {
     if (!isPlaying) return;
@@ -259,6 +279,7 @@ function rotatePipe(row, col) {
     idx = (idx + 1) % PIPE_TYPES.length;
     board[row][col] = PIPE_TYPES[idx];
     renderBoard();
+    playSound(collectSound); // Play collect sound when rotating a pipe
     checkConnection();
 }
 
@@ -305,6 +326,7 @@ function checkConnection() {
         score++;
         scoreSpan.textContent = score;
         isPlaying = false;
+        playSound(winSound); // Play win sound
         // Show a fact and a Learn More button
         setTimeout(() => {
             showFactModal();
@@ -386,6 +408,7 @@ const charityFacts = [
 function showFactModal() {
     // Show confetti!
     showConfetti();
+    playSound(winSound); // Play win sound again for celebration
 
     // Pick a random fact
     const fact = charityFacts[Math.floor(Math.random() * charityFacts.length)];
@@ -431,6 +454,7 @@ function showFactModal() {
     learnBtn.style.cursor = 'pointer';
     learnBtn.style.marginRight = '12px';
     learnBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
         window.open('https://www.charitywater.org/kalahari?&utm_source=liq&utm_medium=cpc&utm_campaign=kalahari_clean_water_africa&scid=4827200&kw=44014740:0&pub_cr_id=739682160921&device=c&network=g&targetid=kwd-994734980575&loc_interest_ms=&loc_physical_ms=9030088&tc=Cj0KCQjwmqPDBhCAARIsADorxIbZuWyHcdgKjcb2fjEqWc2m4Q35yYy-acILVlQ6haPPe23HH4b4ZwsaAkbeEALw_wcB&rl_key=0f914934468b22fa1a97e8217b8aa7be&gad_source=1&gad_campaignid=22353336167&gbraid=0AAAAA98QX6-Vw9wBzjA0dRPCFlEnXzxN2&gclid=Cj0KCQjwmqPDBhCAARIsADorxIbZuWyHcdgKjcb2fjEqWc2m4Q35yYy-acILVlQ6haPPe23HH4b4ZwsaAkbeEALw_wcB', '_blank');
     });
 
@@ -445,22 +469,6 @@ function showFactModal() {
     nextBtn.style.fontSize = '1rem';
     nextBtn.style.cursor = 'pointer';
     nextBtn.style.marginRight = '12px';
-    nextBtn.addEventListener('click', () => {
-        document.body.removeChild(modalBg);
-        // Go to the next level
-        currentLevel++;
-        // If we've finished all levels, show a message and go back to start
-        if (currentLevel >= levels[difficulty].length) {
-            alert('Congratulations! You finished all levels for this difficulty.');
-            gameContainer.style.display = 'none';
-            startScreen.style.display = 'flex';
-            isPlaying = false;
-        } else {
-            setupBoard(difficulty);
-            isPlaying = true;
-            renderBoard();
-        }
-    });
 
     // Add a close button
     const closeBtn = document.createElement('button');
@@ -472,21 +480,66 @@ function showFactModal() {
     closeBtn.style.padding = '12px 24px';
     closeBtn.style.fontSize = '1rem';
     closeBtn.style.cursor = 'pointer';
-    closeBtn.addEventListener('click', () => {
-        document.body.removeChild(modalBg);
-    });
 
     // Add everything to the modal box
     modalBox.appendChild(factText);
     modalBox.appendChild(learnBtn);
-    modalBox.appendChild(nextBtn);
-    modalBox.appendChild(closeBtn);
+
+    // If last level, show congratulations popup instead of Next Level
+    if (currentLevel >= levels[difficulty].length - 1) {
+        // Remove Next Level and Close, show Congratulations and Home button
+        const congrats = document.createElement('div');
+        congrats.textContent = '🎉 Congratulations! You finished all 5 levels!';
+        congrats.style.fontSize = '1.2rem';
+        congrats.style.fontWeight = 'bold';
+        congrats.style.color = '#4FCB53';
+        congrats.style.margin = '24px 0 16px 0';
+
+        const homeBtn = document.createElement('button');
+        homeBtn.textContent = 'Back to Home';
+        homeBtn.style.background = '#2E9DF7';
+        homeBtn.style.color = '#fff';
+        homeBtn.style.border = 'none';
+        homeBtn.style.borderRadius = '8px';
+        homeBtn.style.padding = '12px 24px';
+        homeBtn.style.fontSize = '1rem';
+        homeBtn.style.cursor = 'pointer';
+        homeBtn.addEventListener('click', () => {
+            document.body.removeChild(modalBg);
+            gameContainer.style.display = 'none';
+            startScreen.style.display = 'flex';
+            isPlaying = false;
+        });
+
+        modalBox.appendChild(congrats);
+        modalBox.appendChild(homeBtn);
+    } else {
+        // Not last level, show Next Level and Close
+        modalBox.appendChild(nextBtn);
+        modalBox.appendChild(closeBtn);
+    }
 
     // Add the modal box to the modal background
     modalBg.appendChild(modalBox);
 
     // Add the modal to the page
     document.body.appendChild(modalBg);
+
+    // Next Level button logic
+    nextBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
+        document.body.removeChild(modalBg);
+        currentLevel++;
+        setupBoard(difficulty);
+        isPlaying = true;
+        renderBoard();
+    });
+
+    // Close button logic
+    closeBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
+        document.body.removeChild(modalBg);
+    });
 }
 
 // This function creates a simple confetti effect using DOM elements
@@ -537,5 +590,142 @@ function showConfetti() {
     }, 2300);
 }
 
-// Initial render
-renderBoard();
+// Update showFactModal to show a congratulations popup after all 5 levels
+function showFactModal() {
+    // Show confetti!
+    showConfetti();
+    playSound(winSound); // Play win sound again for celebration
+
+    // Pick a random fact
+    const fact = charityFacts[Math.floor(Math.random() * charityFacts.length)];
+
+    // Create the modal background
+    const modalBg = document.createElement('div');
+    modalBg.style.position = 'fixed';
+    modalBg.style.top = '0';
+    modalBg.style.left = '0';
+    modalBg.style.width = '100vw';
+    modalBg.style.height = '100vh';
+    modalBg.style.background = 'rgba(0,0,0,0.4)';
+    modalBg.style.display = 'flex';
+    modalBg.style.justifyContent = 'center';
+    modalBg.style.alignItems = 'center';
+    modalBg.style.zIndex = '1000';
+
+    // Create the modal box
+    const modalBox = document.createElement('div');
+    modalBox.style.background = '#fff';
+    modalBox.style.borderRadius = '16px';
+    modalBox.style.padding = '32px 24px';
+    modalBox.style.boxShadow = '0 2px 16px rgba(0,0,0,0.15)';
+    modalBox.style.textAlign = 'center';
+    modalBox.style.maxWidth = '350px';
+
+    // Add the fact text
+    const factText = document.createElement('div');
+    factText.textContent = fact;
+    factText.style.fontSize = '1.1rem';
+    factText.style.marginBottom = '24px';
+    factText.style.color = '#2E9DF7';
+
+    // Add the Learn More button
+    const learnBtn = document.createElement('button');
+    learnBtn.textContent = 'Learn More';
+    learnBtn.style.background = '#FFC907';
+    learnBtn.style.color = '#222';
+    learnBtn.style.border = 'none';
+    learnBtn.style.borderRadius = '8px';
+    learnBtn.style.padding = '12px 24px';
+    learnBtn.style.fontSize = '1rem';
+    learnBtn.style.cursor = 'pointer';
+    learnBtn.style.marginRight = '12px';
+    learnBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
+        window.open('https://www.charitywater.org/kalahari?&utm_source=liq&utm_medium=cpc&utm_campaign=kalahari_clean_water_africa&scid=4827200&kw=44014740:0&pub_cr_id=739682160921&device=c&network=g&targetid=kwd-994734980575&loc_interest_ms=&loc_physical_ms=9030088&tc=Cj0KCQjwmqPDBhCAARIsADorxIbZuWyHcdgKjcb2fjEqWc2m4Q35yYy-acILVlQ6haPPe23HH4b4ZwsaAkbeEALw_wcB&rl_key=0f914934468b22fa1a97e8217b8aa7be&gad_source=1&gad_campaignid=22353336167&gbraid=0AAAAA98QX6-Vw9wBzjA0dRPCFlEnXzxN2&gclid=Cj0KCQjwmqPDBhCAARIsADorxIbZuWyHcdgKjcb2fjEqWc2m4Q35yYy-acILVlQ6haPPe23HH4b4ZwsaAkbeEALw_wcB', '_blank');
+    });
+
+    // Add a Next Level button
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next Level';
+    nextBtn.style.background = '#4FCB53';
+    nextBtn.style.color = '#fff';
+    nextBtn.style.border = 'none';
+    nextBtn.style.borderRadius = '8px';
+    nextBtn.style.padding = '12px 24px';
+    nextBtn.style.fontSize = '1rem';
+    nextBtn.style.cursor = 'pointer';
+    nextBtn.style.marginRight = '12px';
+
+    // Add a close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close';
+    closeBtn.style.background = '#F5402C';
+    closeBtn.style.color = '#fff';
+    closeBtn.style.border = 'none';
+    closeBtn.style.borderRadius = '8px';
+    closeBtn.style.padding = '12px 24px';
+    closeBtn.style.fontSize = '1rem';
+    closeBtn.style.cursor = 'pointer';
+
+    // Add everything to the modal box
+    modalBox.appendChild(factText);
+    modalBox.appendChild(learnBtn);
+
+    // If last level, show congratulations popup instead of Next Level
+    if (currentLevel >= levels[difficulty].length - 1) {
+        // Remove Next Level and Close, show Congratulations and Home button
+        const congrats = document.createElement('div');
+        congrats.textContent = '🎉 Congratulations! You finished all 5 levels!';
+        congrats.style.fontSize = '1.2rem';
+        congrats.style.fontWeight = 'bold';
+        congrats.style.color = '#4FCB53';
+        congrats.style.margin = '24px 0 16px 0';
+
+        const homeBtn = document.createElement('button');
+        homeBtn.textContent = 'Back to Home';
+        homeBtn.style.background = '#2E9DF7';
+        homeBtn.style.color = '#fff';
+        homeBtn.style.border = 'none';
+        homeBtn.style.borderRadius = '8px';
+        homeBtn.style.padding = '12px 24px';
+        homeBtn.style.fontSize = '1rem';
+        homeBtn.style.cursor = 'pointer';
+        homeBtn.addEventListener('click', () => {
+            document.body.removeChild(modalBg);
+            gameContainer.style.display = 'none';
+            startScreen.style.display = 'flex';
+            isPlaying = false;
+        });
+
+        modalBox.appendChild(congrats);
+        modalBox.appendChild(homeBtn);
+    } else {
+        // Not last level, show Next Level and Close
+        modalBox.appendChild(nextBtn);
+        modalBox.appendChild(closeBtn);
+    }
+
+    // Add the modal box to the modal background
+    modalBg.appendChild(modalBox);
+
+    // Add the modal to the page
+    document.body.appendChild(modalBg);
+
+    // Next Level button logic
+    nextBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
+        document.body.removeChild(modalBg);
+        currentLevel++;
+        setupBoard(difficulty);
+        isPlaying = true;
+        renderBoard();
+    });
+
+    // Close button logic
+    closeBtn.addEventListener('click', () => {
+        playSound(clickSound); // Play click sound
+        document.body.removeChild(modalBg);
+    });
+
+    // ...existing code...
+}
